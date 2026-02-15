@@ -1,6 +1,7 @@
 // Wireless Sensor System
 #include "src/wss.h"
-
+#include <WiFi.h>
+#include "WiFi.h"
 
 #if defined(ARDUINO_SUPER_MINI_ESP32C3)
   static uint8_t pinLED1 = BUILTIN_LED;   // LED connected to digital pin
