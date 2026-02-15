@@ -18,7 +18,7 @@ void setup() {
 	pinMode(pinLED1, OUTPUT);
 	Serial.begin(115200);
 
-	wifi_begin();
+
 }
 
 void doFrame() {
