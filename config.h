@@ -1,0 +1,11 @@
+// Wireless Sensor SystemsTM
+// Copyright 2026(c) Natalija Moss
+// github.com/Lady-Natalya/wss
+
+#ifndef config_h
+    #define config_h
+	#include "src/wss.h"
+
+	#define FW_VERSION "0.0.0"
+    #define BUILD_DATE "2026FEB28"
+#endif
