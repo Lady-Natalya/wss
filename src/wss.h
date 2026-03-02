@@ -1,9 +1,16 @@
 #ifndef wss_h
 	#define wss_h
+
 	#include <Arduino.h>
-	#include <WiFi.h>
-	#include "wireless.h"
-	//#include <Preferences.h>
-	//Preferences preferences;
+	#include <Preferences.h>
+//	#include "esp_http_server.h"
+	#include "WiFi.h"
+	#include "WebServer.h"
+
+	#include "../config.h"
+	#include "gpio.h"
+	#include "LED.h"
+	#include "preferences_manager.h"
+	#include "http_server.h"
 
 #endif
