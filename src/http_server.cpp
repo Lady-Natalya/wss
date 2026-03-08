@@ -30,31 +30,43 @@ const uint8_t config_style_html[] = R"=====(	<style>
 const uint8_t config_head_html1[] = R"=====(</head>)=====";
 
 const uint8_t config_body_html0[] = R"=====(<body>
-	<h1">WSS Configuration Page</h1>
-	<label for="wifissid">Select WiFi Network: </label>)=====";
+	<h1">WSS Configuration Page</h1><br><br>)=====";
 
-const uint8_t config_wifi_select_html0[] = R"=====(<select name="wifissid" id="wifissid"  form="selections" >
+const uint8_t status_title_html[] = R"=====(
+	<div>Device Status:</div>
+)=====";
+
+const uint8_t config_wifi_select_html0[] = R"=====(<label for="wifissid">Select WiFi Network: </label>
+<select name="wifissid" id="wifissid"  form="selections" >
 	)=====";
 const uint8_t config_wifi_select_html1[] = R"=====(</select><br>)=====";
 
 const uint8_t config_body_html1[] = R"=====(
+	<form action="/post"  id="selections">)=====";
 
-	<br><br>
-	<form action="/post"  id="selections">
-		<label for="wifipass">Wifi Password:</label>
-		<input type="text" id="wifipass" name="wifipass"><br><br>
-		<label for="device_building">Building Name:</label>
-		<input type="text" id="device_building" name="device_building"><br><br>
-		<label for="device_room">Room Name:</label>
-		<input type="text" id="device_room" name="device_room"><br><br>
-		<label for="device_id">Device ID:</label>
-		<input type="text" id="device_id" name="device_id"><br><br>
-		<input type="submit" value="Submit">
+const uint8_t config_close_param[] = R"=====("><br>)=====";
+
+const uint8_t config_wifipass[] = R"=====(
+	<label for="wifipass">Wifi Password:</label>
+	<input type="text" id="wifipass" name="wifipass" placeholder=")=====";
+
+const uint8_t config_bldg[] = R"=====(<label for="devLoc_bldgName">Building Name:</label>
+	<input type="text" id="devLoc_bldgName" name="devLoc_bldgName" placeholder=")=====";
+
+const uint8_t config_room[] = R"=====(<label for="devLoc_roomName">Room Name:</label>
+	<input type="text" id="devLoc_roomName" name="devLoc_roomName" placeholder=")=====";
+
+const uint8_t config_devid[] = R"=====(<label for="deviceID">Device ID:</label>
+	<input type="text" id="deviceID" name="deviceID" placeholder=")=====";
+
+const uint8_t config_body_html2[] = R"=====(<input type="submit" value="Submit">
 	</form>
 	<br>
 </body>
 </html>
 )=====";
+
+const uint8_t return_home_html[] = R"=====(<a href="/">Return to Home</a>)=====";
 
 // root of the intial web page
 void handleRoot(void) {
@@ -68,6 +80,11 @@ void handleRoot(void) {
 	message += (char*)config_style_html;
 	message += (char*)config_head_html1;
 	message += (char*)config_body_html0;
+
+	message += (char*)status_title_html;
+	message += "<span>Temperature: ";
+	message += temperatureRead();
+	message += "&deg;C</span><br><br><br>";
 
 	if (n > 0) {
 		message += (char*)config_wifi_select_html0;
@@ -85,6 +102,20 @@ void handleRoot(void) {
 
 	message += "<p></p>";
 	message += (char*)config_body_html1;
+	message += (char*)config_wifipass;
+	message += preferences_get_string((char*)"wifipass");
+	message += (char*)config_close_param;
+	message += (char*)config_bldg;
+	message += preferences_get_string((char*)"devLoc_bldgName");
+	message += (char*)config_close_param;
+	message += (char*)config_room;
+	message += preferences_get_string((char*)"devLoc_roomName");
+	message += (char*)config_close_param;
+	message += (char*)config_devid;
+	message += preferences_get_string((char*)"deviceID");
+	message += (char*)config_close_param;
+
+	message += (char*)config_body_html2;
 	server.send(200, "text/html",  message);
 
 	Serial.println(message);
@@ -95,34 +126,24 @@ void handleRoot(void) {
 // submit button pressed
 void handlePost(void) {
 
-//  ------------------- debug to client
-  String message = "SUBMITTED\n\n";
-  message += "URI: ";
-  message += server.uri();
-  message += "\nMethod: ";
-  message += (server.method() == HTTP_GET) ? "GET" : "POST";
-  message += "\n\n There are ";
-  message += server.args();
-  message += " variables passed ";
-  message += "\n\n";
-  for (uint8_t i = 0; i < server.args(); i++) {
-    message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
-  }
-  message += "\n\n";
-  server.send(200, "text/plain", message);
-// ------------------------------------------------------------------
-
-	preferences_update_server_args(server.arg(0), server.arg(1), server.arg(2), server.arg(3), server.arg(4));
+	String message = "SUBMITTED\n\n";
+	message += "URI: ";
+	message += server.uri();
+	message += "\nMethod: ";
+	message += (server.method() == HTTP_GET) ? "GET" : "POST";
+	message += "\n\n There are ";
+	message += server.args();
+	message += " variables passed ";
+	message += "\n\n";
+	for (uint8_t i = 0; i < server.args(); i++) {
+		message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
+		preferences_update_server_pref((char*)server.argName(i).c_str(), server.arg(i));
+	}
+	message += "\n\n";
+	//message += (char*)return_home_html;
+	server.send(200, "text/plain", message);
 	Serial.println("Submit done");
 
-/*
-	server.arg(0).toCharArray( MySettings.localSSID, 45);
-	server.arg(1).toCharArray(MySettings.localpassword, 45) ;
-	server.arg(2).toCharArray(MySettings.BoxUser, 45) ;
-	server.sendHeader("Connection", "close");
-	webserverrequired = false;
-	Serial.println("Submit done");
-	SaveSettings(true);*/
 }
 
 //****************HANDLE NOT FOUND*********************//

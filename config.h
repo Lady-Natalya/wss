@@ -1,4 +1,4 @@
-// Wireless Sensor SystemsTM
+// Wireless Sensor Systems
 // Copyright 2026(c) Natalija Moss
 // github.com/Lady-Natalya/wss
 

@@ -1,4 +1,4 @@
-// Wireless Sensor System
+// Wireless Sensor Systems
 #include "src/wss.h"
 
 uint32_t frameDelay = 5000;

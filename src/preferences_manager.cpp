@@ -19,12 +19,20 @@ void preferences_do_setup(void) {
 	preferences.end();
 }
 
-void preferences_update_server_args(String arg0, String arg1, String arg2, String arg3, String arg4) {
+String preferences_get_string(char *keyName) {
+	String ret = "default";
+	preferences.begin("wssPrefs", true);
+	ret = preferences.getString(keyName);
+	preferences.end();
+	return ret;
+}
+
+void preferences_update_server_pref(char *keyName, String keyVal) {
 	preferences.begin("wssPrefs", false);
-	preferences.putString("wifiSSID", arg0);
-	preferences.putString("wifiPass", arg1);
-	preferences.putString("devLoc_bldgName", arg2);
-	preferences.putString("devLoc_roomName", arg3);
-	preferences.putString("deviceID", arg4);
+	preferences.putString(keyName, keyVal);
+	Serial.print(keyName);
+	Serial.print(" = ");
+	Serial.print(keyVal);
+	Serial.println(" ");
 	preferences.end();
 }
