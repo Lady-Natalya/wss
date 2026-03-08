@@ -45,21 +45,19 @@ const uint8_t config_body_html1[] = R"=====(
 	<form action="/post"  id="selections">)=====";
 
 const uint8_t config_close_param[] = R"=====("><br>)=====";
-
 const uint8_t config_wifipass[] = R"=====(
 	<label for="wifipass">Wifi Password:</label>
 	<input type="text" id="wifipass" name="wifipass" placeholder=")=====";
-
 const uint8_t config_bldg[] = R"=====(<label for="devLoc_bldgName">Building Name:</label>
 	<input type="text" id="devLoc_bldgName" name="devLoc_bldgName" placeholder=")=====";
-
 const uint8_t config_room[] = R"=====(<label for="devLoc_roomName">Room Name:</label>
 	<input type="text" id="devLoc_roomName" name="devLoc_roomName" placeholder=")=====";
-
 const uint8_t config_devid[] = R"=====(<label for="deviceID">Device ID:</label>
 	<input type="text" id="deviceID" name="deviceID" placeholder=")=====";
+const uint8_t config_probe_pin[] = R"=====(<br><label for="tempSensorPin">Temp Sensor Pin:</label>
+	<input type="text" id="tempSensorPin" name="tempSensorPin" placeholder=")=====";
 
-const uint8_t config_body_html2[] = R"=====(<input type="submit" value="Submit">
+const uint8_t config_body_html2[] = R"=====(<br><input type="submit" value="Submit">
 	</form>
 	<br>
 </body>
@@ -113,6 +111,9 @@ void handleRoot(void) {
 	message += (char*)config_close_param;
 	message += (char*)config_devid;
 	message += preferences_get_string((char*)"deviceID");
+	message += (char*)config_close_param;
+	message += (char*)config_probe_pin;
+	message += preferences_get_string((char*)"tempSensorPin");
 	message += (char*)config_close_param;
 
 	message += (char*)config_body_html2;

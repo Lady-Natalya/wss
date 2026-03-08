@@ -15,6 +15,8 @@ void preferences_do_setup(void) {
 	Serial.println(preferences.getString("devLoc_roomName"));
 	Serial.print("deviceID: ");
 	Serial.println(preferences.getString("deviceID"));
+	Serial.print("tempSensorPin: ");
+	Serial.println(preferences.getString("tempSensorPin"));
 
 	preferences.end();
 }
