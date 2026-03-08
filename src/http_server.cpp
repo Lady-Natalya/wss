@@ -56,6 +56,22 @@ const uint8_t config_devid[] = R"=====(<label for="deviceID">Device ID:</label>
 	<input type="text" id="deviceID" name="deviceID" placeholder=")=====";
 const uint8_t config_probe_pin[] = R"=====(<br><label for="tempSensorPin">Temp Sensor Pin:</label>
 	<input type="text" id="tempSensorPin" name="tempSensorPin" placeholder=")=====";
+const uint8_t config_email_enabled[] = R"=====(<br><label for="email_enabled">Enable SMTP Email Alerts: </label>
+	<select name="email_enabled" id="email_enabled"  form="selections" >
+		<option value="unset">unset</true>
+		<option value="true">enable</true>
+		<option value="false">disable</true>
+	</select><br>)=====";
+const uint8_t config_email_host[] = R"=====(<label for="smtpHost">SMTP_HOST:</label>
+	<input type="text" id="smtpHost" name="smtpHost" placeholder=")=====";
+const uint8_t config_email_port[] = R"=====(<label for="smtpPort">SMTP_PORT:</label>
+	<input type="text" id="smtpPort" name="smtpPort" placeholder=")=====";
+const uint8_t config_email_sender[] = R"=====(<label for="smtpSender">Sender Address:</label>
+	<input type="text" id="smtpSender" name="smtpSender" placeholder=")=====";
+const uint8_t config_email_pass[] = R"=====(<label for="smtpSenderPass">Sender Pass:</label>
+	<input type="text" id="smtpSenderPass" name="smtpSenderPass"><br>)=====";
+const uint8_t config_email_recipient[] = R"=====(<label for="smtpRecipient">Recipient Address:</label>
+	<input type="text" id="smtpRecipient" name="smtpRecipient" placeholder=")=====";
 
 const uint8_t config_body_html2[] = R"=====(<br><input type="submit" value="Submit">
 	</form>
@@ -115,6 +131,23 @@ void handleRoot(void) {
 	message += (char*)config_probe_pin;
 	message += preferences_get_string((char*)"tempSensorPin");
 	message += (char*)config_close_param;
+	message += (char*)config_email_enabled;
+	message += (char*)config_email_host;
+	message += preferences_get_string((char*)"smtpHost");
+	message += (char*)config_close_param;
+	message += (char*)config_email_port;
+	message += preferences_get_string((char*)"smtpPort");
+	message += (char*)config_close_param;
+	message += (char*)config_email_sender;
+	message += preferences_get_string((char*)"smtpSender");
+	message += (char*)config_close_param;
+	message += (char*)config_email_pass;
+	message += (char*)config_email_recipient;
+	message += preferences_get_string((char*)"smtpRecipient");
+	message += (char*)config_close_param;
+
+
+
 
 	message += (char*)config_body_html2;
 	server.send(200, "text/html",  message);
@@ -138,7 +171,9 @@ void handlePost(void) {
 	message += "\n\n";
 	for (uint8_t i = 0; i < server.args(); i++) {
 		message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
-		preferences_update_server_pref((char*)server.argName(i).c_str(), server.arg(i));
+		if (server.arg(i) != "") {
+			preferences_update_server_pref((char*)server.argName(i).c_str(), server.arg(i));
+		}
 	}
 	message += "\n\n";
 	//message += (char*)return_home_html;
