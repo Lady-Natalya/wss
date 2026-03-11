@@ -38,3 +38,15 @@ void preferences_update_server_pref(char *keyName, String keyVal) {
 	Serial.println(" ");
 	preferences.end();
 }
+
+bool preferences_is_wifi_configured(void) {
+	bool ret = false;
+	String ssid = preferences_get_string("wifiSSID");
+
+	if (ssid && (ssid != "null")) {
+		if (preferences_get_string("wifiPass")) {
+			ret = true;
+		}
+	}
+	return ret;
+}

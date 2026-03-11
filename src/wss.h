@@ -11,6 +11,7 @@
 	#include "gpio.h"
 	#include "LED.h"
 	#include "preferences_manager.h"
+	#include "wifi_connection.h"
 	#include "http_server.h"
 
 #endif

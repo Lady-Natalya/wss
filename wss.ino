@@ -10,6 +10,7 @@ void setup() {
 	preferences_do_setup();
 	gpio_begin();
 	http_server_begin();
+	if (preferences_is_wifi_configured()) wifi_connection_begin();
 }
 
 void doFrame() {
@@ -18,6 +19,7 @@ void doFrame() {
 
 	lastMillis = millis();
 	LED_blink();
+	autoprint_wifi_connection_status();
 }
 
 void loop() {

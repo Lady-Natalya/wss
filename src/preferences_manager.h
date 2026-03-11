@@ -7,4 +7,6 @@
 
 	void preferences_update_server_pref(char *keyName, String keyVal);
 
+	bool preferences_is_wifi_configured(void);
+
 #endif

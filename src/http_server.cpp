@@ -3,7 +3,6 @@
 const char *ssid = "wss_esp32-c3-sm";
 WebServer server(80);
 
-
 const uint8_t config_head_html0[] = R"=====(<!DOCTYPE html>
 <html>
 <head>
@@ -36,8 +35,8 @@ const uint8_t status_title_html[] = R"=====(
 	<div>Device Status:</div>
 )=====";
 
-const uint8_t config_wifi_select_html0[] = R"=====(<label for="wifissid">Select WiFi Network: </label>
-<select name="wifissid" id="wifissid"  form="selections" >
+const uint8_t config_wifi_select_html0[] = R"=====(<label for="wifiSSID">Select WiFi Network: </label>
+<select name="wifiSSID" id="wifiSSID"  form="selections" >
 	)=====";
 const uint8_t config_wifi_select_html1[] = R"=====(</select><br>)=====";
 
@@ -45,33 +44,13 @@ const uint8_t config_body_html1[] = R"=====(
 	<form action="/post"  id="selections">)=====";
 
 const uint8_t config_close_param[] = R"=====("><br>)=====";
-const uint8_t config_wifipass[] = R"=====(
-	<label for="wifipass">Wifi Password:</label>
-	<input type="text" id="wifipass" name="wifipass" placeholder=")=====";
-const uint8_t config_bldg[] = R"=====(<label for="devLoc_bldgName">Building Name:</label>
-	<input type="text" id="devLoc_bldgName" name="devLoc_bldgName" placeholder=")=====";
-const uint8_t config_room[] = R"=====(<label for="devLoc_roomName">Room Name:</label>
-	<input type="text" id="devLoc_roomName" name="devLoc_roomName" placeholder=")=====";
-const uint8_t config_devid[] = R"=====(<label for="deviceID">Device ID:</label>
-	<input type="text" id="deviceID" name="deviceID" placeholder=")=====";
-const uint8_t config_probe_pin[] = R"=====(<br><label for="tempSensorPin">Temp Sensor Pin:</label>
-	<input type="text" id="tempSensorPin" name="tempSensorPin" placeholder=")=====";
+
 const uint8_t config_email_enabled[] = R"=====(<br><label for="email_enabled">Enable SMTP Email Alerts: </label>
 	<select name="email_enabled" id="email_enabled"  form="selections" >
 		<option value="unset">unset</true>
 		<option value="true">enable</true>
 		<option value="false">disable</true>
 	</select><br>)=====";
-const uint8_t config_email_host[] = R"=====(<label for="smtpHost">SMTP_HOST:</label>
-	<input type="text" id="smtpHost" name="smtpHost" placeholder=")=====";
-const uint8_t config_email_port[] = R"=====(<label for="smtpPort">SMTP_PORT:</label>
-	<input type="text" id="smtpPort" name="smtpPort" placeholder=")=====";
-const uint8_t config_email_sender[] = R"=====(<label for="smtpSender">Sender Address:</label>
-	<input type="text" id="smtpSender" name="smtpSender" placeholder=")=====";
-const uint8_t config_email_pass[] = R"=====(<label for="smtpSenderPass">Sender Pass:</label>
-	<input type="text" id="smtpSenderPass" name="smtpSenderPass"><br>)=====";
-const uint8_t config_email_recipient[] = R"=====(<label for="smtpRecipient">Recipient Address:</label>
-	<input type="text" id="smtpRecipient" name="smtpRecipient" placeholder=")=====";
 
 const uint8_t config_body_html2[] = R"=====(<br><input type="submit" value="Submit">
 	</form>
@@ -81,6 +60,28 @@ const uint8_t config_body_html2[] = R"=====(<br><input type="submit" value="Subm
 )=====";
 
 const uint8_t return_home_html[] = R"=====(<a href="/">Return to Home</a>)=====";
+
+
+String add_config_page_param(String paramName, String paramLabelText, bool usePlaceholder) {
+	String ret = "";
+	ret += "<label for=\"";
+	ret += paramName;
+	ret += "\">";
+	ret += paramLabelText;
+	ret += ":</label>\n	<input type=\"text\" id=\"";
+	ret += paramName;
+	ret += "\" name=\"";
+	ret += paramName;
+	ret += "\"";
+	if (usePlaceholder) {
+		ret += " placeholder=\"";
+		ret += preferences_get_string((char*)paramName.c_str());
+		ret += "\"";
+	}
+	ret += (char*)config_close_param;
+	return ret;
+}
+
 
 // root of the intial web page
 void handleRoot(void) {
@@ -98,10 +99,14 @@ void handleRoot(void) {
 	message += (char*)status_title_html;
 	message += "<span>Temperature: ";
 	message += temperatureRead();
-	message += "&deg;C</span><br><br><br>";
+	message += "&deg;C</span><br>";
+	message += "<span>WiFi Status: ";
+	message += get_wifi_connection_status();
+	message += "</span><br><br><br>";
 
 	if (n > 0) {
 		message += (char*)config_wifi_select_html0;
+		message += "<option value=\"unset\">&nbsp;</option>";
 		for (int i = 0; i < n; ++i) {
 			message += "<option value=\"";
 			message += WiFi.SSID(i);
@@ -109,6 +114,7 @@ void handleRoot(void) {
 			message += WiFi.SSID(i);
 			message += "</option>";
 		}
+		message += "<option value=\"null\">FORGET WIFI NETWORK -- WILL NEED TO REBOOT</option>";
 		message += (char*)config_wifi_select_html1;
 	} else {
 		message += "<p>Error: No WiFi Networks Available</p>";
@@ -116,44 +122,23 @@ void handleRoot(void) {
 
 	message += "<p></p>";
 	message += (char*)config_body_html1;
-	message += (char*)config_wifipass;
-	message += preferences_get_string((char*)"wifipass");
-	message += (char*)config_close_param;
-	message += (char*)config_bldg;
-	message += preferences_get_string((char*)"devLoc_bldgName");
-	message += (char*)config_close_param;
-	message += (char*)config_room;
-	message += preferences_get_string((char*)"devLoc_roomName");
-	message += (char*)config_close_param;
-	message += (char*)config_devid;
-	message += preferences_get_string((char*)"deviceID");
-	message += (char*)config_close_param;
-	message += (char*)config_probe_pin;
-	message += preferences_get_string((char*)"tempSensorPin");
-	message += (char*)config_close_param;
+	message += add_config_page_param("wifiPass", "WiFi Password", true);
+	message += add_config_page_param("devLoc_bldgName", "Building Name", true);
+	message += add_config_page_param("devLoc_roomName", "Room Name", true);
+	message += add_config_page_param("deviceID", "Device ID", true);
+	message += add_config_page_param("tempSensorPin", "Temp Sensor Pin", true);
 	message += (char*)config_email_enabled;
-	message += (char*)config_email_host;
-	message += preferences_get_string((char*)"smtpHost");
-	message += (char*)config_close_param;
-	message += (char*)config_email_port;
-	message += preferences_get_string((char*)"smtpPort");
-	message += (char*)config_close_param;
-	message += (char*)config_email_sender;
-	message += preferences_get_string((char*)"smtpSender");
-	message += (char*)config_close_param;
-	message += (char*)config_email_pass;
-	message += (char*)config_email_recipient;
-	message += preferences_get_string((char*)"smtpRecipient");
-	message += (char*)config_close_param;
-
-
-
+	message += add_config_page_param("smtpHost", "SMTP Host", true);
+	message += add_config_page_param("smtpPort", "SMTP Port", true);
+	message += add_config_page_param("smtpSender", "Sender Address", true);
+	message += add_config_page_param("smtpSenderPass", "Sender Pass", false);
+	message += add_config_page_param("smtpRecipient", "Recipient Address", true);
 
 	message += (char*)config_body_html2;
 	server.send(200, "text/html",  message);
 
 	Serial.println(message);
-	Serial.println("Root done");
+	Serial.println("handleRoot complete");
 
 }
 
@@ -172,6 +157,9 @@ void handlePost(void) {
 	for (uint8_t i = 0; i < server.args(); i++) {
 		message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
 		if (server.arg(i) != "") {
+			if (server.arg(i) == "unset") {
+				continue;	// Ignore non-selections for <select> drop-downs.
+			}
 			preferences_update_server_pref((char*)server.argName(i).c_str(), server.arg(i));
 		}
 	}
