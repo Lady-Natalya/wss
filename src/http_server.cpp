@@ -45,11 +45,10 @@ const uint8_t config_body_html1[] = R"=====(
 
 const uint8_t config_close_param[] = R"=====("><br>)=====";
 
-const uint8_t config_email_enabled[] = R"=====(<br><label for="email_enabled">Enable SMTP Email Alerts: </label>
-	<select name="email_enabled" id="email_enabled"  form="selections" >
-		<option value="unset">unset</true>
-		<option value="true">enable</true>
-		<option value="false">disable</true>
+const uint8_t config_enable_options[] = R"=====("  form="selections" >
+		<option value="unset">&nbsp;</option>
+		<option value="true">enable</option>
+		<option value="false">disable</option>
 	</select><br>)=====";
 
 const uint8_t config_body_html2[] = R"=====(<br><input type="submit" value="Submit">
@@ -60,6 +59,21 @@ const uint8_t config_body_html2[] = R"=====(<br><input type="submit" value="Subm
 )=====";
 
 const uint8_t return_home_html[] = R"=====(<a href="/">Return to Home</a>)=====";
+
+
+String add_config_page_enable_dropdown(String paramName, String paramLabelText) {
+	String ret ="";
+	ret += "<label for=\"";
+	ret += paramName;
+	ret += "\">";
+	ret += paramLabelText;
+	ret += ":</label>\n	<select name=\"";
+	ret += paramName;
+	ret += "\" id=\"";
+	ret += paramName;
+	ret += (char*)config_enable_options;
+	return ret;
+}
 
 
 String add_config_page_param(String paramName, String paramLabelText, bool usePlaceholder) {
@@ -86,16 +100,20 @@ String add_config_page_param(String paramName, String paramLabelText, bool usePl
 // root of the intial web page
 void handleRoot(void) {
 	int n = WiFi.scanNetworks();
-
 	String message="";
+
+	// <head>
 	message += (char*)config_head_html0;
 	message += (char*)config_title_html0;
 	message += FW_VERSION;
 	message += (char*)config_title_html1;
 	message += (char*)config_style_html;
 	message += (char*)config_head_html1;
+
+	// <body>
 	message += (char*)config_body_html0;
 
+	// Device Status
 	message += (char*)status_title_html;
 	message += "<span>Temperature: ";
 	message += temperatureRead();
@@ -104,6 +122,7 @@ void handleRoot(void) {
 	message += get_wifi_connection_status();
 	message += "</span><br><br><br>";
 
+	// WiFi Configuration
 	if (n > 0) {
 		message += (char*)config_wifi_select_html0;
 		message += "<option value=\"unset\">&nbsp;</option>";
@@ -119,27 +138,49 @@ void handleRoot(void) {
 	} else {
 		message += "<p>Error: No WiFi Networks Available</p>";
 	}
-
-	message += "<p></p>";
 	message += (char*)config_body_html1;
-	message += add_config_page_param("wifiPass", "WiFi Password", true);
+	message += add_config_page_param("wifiPass", "WiFi Password", false);
+	message += "<br>";
+
+	// Device Preferences
 	message += add_config_page_param("devLoc_bldgName", "Building Name", true);
 	message += add_config_page_param("devLoc_roomName", "Room Name", true);
 	message += add_config_page_param("deviceID", "Device ID", true);
+	message += "<br>";
 	message += add_config_page_param("tempSensorPin", "Temp Sensor Pin", true);
-	message += (char*)config_email_enabled;
+	message += "<br>";
+
+	// SMTP Config
+	message += add_config_page_enable_dropdown("emailEnabled", "Enable SMTP Email Alerts");
 	message += add_config_page_param("smtpHost", "SMTP Host", true);
 	message += add_config_page_param("smtpPort", "SMTP Port", true);
 	message += add_config_page_param("smtpSender", "Sender Address", true);
 	message += add_config_page_param("smtpSenderPass", "Sender Pass", false);
 	message += add_config_page_param("smtpRecipient", "Recipient Address", true);
+	message += "<br>";
 
+	// Discord Config
+	message += add_config_page_enable_dropdown("discordEnabled", "Enable Discord Alerts");
+	message += add_config_page_param("discordWebhook", "Discord Webhook URL", true);
+	//message += add_config_page_param("discordChannelID", "Discord Channel ID", true);
+	//message += add_config_page_param("discordToken", "Discord Token", true);
+
+	// End of <body>
 	message += (char*)config_body_html2;
+
 	server.send(200, "text/html",  message);
 
 	Serial.println(message);
 	Serial.println("handleRoot complete");
 
+}
+
+bool isNum(String str) {
+	for(byte i=0;i<str.length();i++)
+	{
+		if(isDigit(str.charAt(i))) return true;
+	}
+	return false;
 }
 
 // submit button pressed
@@ -160,7 +201,9 @@ void handlePost(void) {
 			if (server.arg(i) == "unset") {
 				continue;	// Ignore non-selections for <select> drop-downs.
 			}
-			preferences_update_server_pref((char*)server.argName(i).c_str(), server.arg(i));
+			String type = "String";
+			if ((server.arg(i) == "true") || (server.arg(i) == "false")) type = "bool";
+			preferences_update_server_pref((char*)server.argName(i).c_str(), server.arg(i), type);
 		}
 	}
 	message += "\n\n";
@@ -200,5 +243,5 @@ void http_server_begin(void) {
 
 void http_server_handler(void) {
 	server.handleClient();
-	delay(2);
+	//delay(2);
 }

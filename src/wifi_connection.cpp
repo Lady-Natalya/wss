@@ -7,13 +7,13 @@ void wifi_connection_begin(void){
 	String ssid = preferences_get_string("wifiSSID");
 	String pass = preferences_get_string("wifiPass");
 
-	if ((ssid) && (ssid != "null")) {
+	if ((ssid) && (ssid != "")) {
 		if (pass) {
 			WiFi.mode(WIFI_STA);
 			WiFi.begin(ssid, pass);
 			Serial.print("Connecting to WiFi network: " + ssid + "\n");
 		}
-	} else Serial.print("wifi_connection_begin: No WiFi network selected yet.");
+	} else Serial.println("wifi_connection_begin: No WiFi network selected yet.");
 }
 
 String get_wifi_connection_status(void){

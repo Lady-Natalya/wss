@@ -11,6 +11,7 @@ void setup() {
 	gpio_begin();
 	http_server_begin();
 	if (preferences_is_wifi_configured()) wifi_connection_begin();
+	if (preferences_check_discord_configured()) discord_check_if_enabled();
 }
 
 void doFrame() {
@@ -20,6 +21,7 @@ void doFrame() {
 	lastMillis = millis();
 	LED_blink();
 	autoprint_wifi_connection_status();
+	discord_send_status();
 }
 
 void loop() {
