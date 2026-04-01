@@ -7,5 +7,5 @@
 	#include "src/wss.h"
 
 	#define FW_VERSION "0.0.1"
-    #define BUILD_DATE "2026FEB28"
+    #define BUILD_DATE "2026MAR30"
 #endif
