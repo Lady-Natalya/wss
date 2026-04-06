@@ -11,8 +11,4 @@
 
 	void preferences_update_server_pref(char *keyName, String keyVal, String dataType);
 
-	bool preferences_is_wifi_configured(void);
-
-	bool preferences_check_discord_configured(void);
-
 #endif

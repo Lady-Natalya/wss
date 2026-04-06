@@ -3,12 +3,12 @@
 
 	#define DISCORDSTATUSDELAYMS 30000
 
-	void discord_set_configuration_status(bool configured);
-
-	void discord_check_if_enabled(void);
+	bool discord_setup(void);
 
 	void discord_begin(void);
 
-	void discord_send_status(void);
+	void discord_send_status(bool force);
+
+	bool discord_get_last_status_failed(void);
 
 #endif

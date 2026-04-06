@@ -2,8 +2,26 @@
 
 Preferences preferences;
 
+void preferences_reload(void) {
+	Serial.println("Loading Preferences...");
+	if (wifi_setup()) {
+		Serial.println("Wifi is Configured.  Attempting connection...");
+		wifi_connection_begin();
+		if (get_wifi_connection_status() == WIFIDISCONNECTEDSTRING) {
+			Serial.println("Unable to connect to WiFi.");
+		}
+	}
+	if (discord_setup()) {
+		Serial.println("Discord is both Configured and Enabled.");
+		discord_begin();
+	}
+	else Serial.println("Discord is Disabled.");
+}
+
 void preferences_do_setup(void) {
 	preferences.begin("wssPrefs", true);
+
+	preferences_reload();
 
 	Serial.print("devLoc_bldgName: ");
 	Serial.println(preferences.getString("devLoc_bldgName"));
@@ -13,8 +31,6 @@ void preferences_do_setup(void) {
 	Serial.println(preferences.getString("deviceID"));
 	Serial.print("tempSensorPin: ");
 	Serial.println(preferences.getString("tempSensorPin"));
-	Serial.print("channel: ");
-	Serial.println(preferences.getUInt("discordChannelID"));
 	Serial.print("token: ");
 	Serial.println(preferences.getString("discordToken"));
 
@@ -50,40 +66,12 @@ void preferences_update_server_pref(char *keyName, String keyVal, String dataTyp
 	if (dataType == "bool") {
 		if (keyVal == "true") preferences.putBool(keyName, true);
 		else if (keyVal == "false") preferences.putBool(keyName, false);
-	} /*else if (dataType == "uint32_t") {
-		preferences.putUInt(keyName, keyVal);
-	}*/ else preferences.putString(keyName, keyVal);
+	} else preferences.putString(keyName, keyVal);
 	Serial.print(keyName);
 	Serial.print(" = ");
 	Serial.print(keyVal);
 	Serial.println(" ");
 	preferences.end();
 
-	if (keyName = "discordEnabled") {
-		discord_check_if_enabled();
-	}
-}
-
-bool preferences_is_wifi_configured(void) {
-	bool ret = false;
-	String ssid = preferences_get_string("wifiSSID");
-
-	if (ssid && (ssid != "")) {
-		if (preferences_get_string("wifiPass")) {
-			ret = true;
-		}
-	}
-	return ret;
-}
-
-bool preferences_check_discord_configured(void) {
-	bool enabled = preferences_get_string("discordEnabled");
-	String webhook = preferences_get_string("discordWebhook");
-
-	if (enabled && (webhook != "")) {
-		discord_set_configuration_status(true);
-		return true;
-	} else discord_set_configuration_status(false);
-
-	return false;
+	preferences_reload();
 }
