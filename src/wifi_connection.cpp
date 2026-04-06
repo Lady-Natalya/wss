@@ -1,27 +1,57 @@
 #include "wss.h"
 
+bool wifi_configured = false;
 bool wifi_connected = false;
 uint32_t lastWiFiStatusMillis = 0;
+uint32_t lastWiFiRetryMillis = 0;
 
-void wifi_connection_begin(void){
-	String ssid = preferences_get_string("wifiSSID");
-	String pass = preferences_get_string("wifiPass");
+String wifiSSID = "";
+String wifiPass = "";
 
-	if ((ssid) && (ssid != "")) {
-		if (pass) {
-			WiFi.mode(WIFI_STA);
-			WiFi.begin(ssid, pass);
-			Serial.print("Connecting to WiFi network: " + ssid + "\n");
-		}
-	} else Serial.println("wifi_connection_begin: No WiFi network selected yet.");
+bool wifi_setup(void) {
+	wifi_configured = false;
+	wifi_connected = false;
+	wifiSSID = preferences_get_string("wifiSSID");
+	wifiPass = preferences_get_string("wifiPass");
+	if ((wifiSSID) && (wifiSSID != "") && wifiPass) {
+		wifi_configured = true;
+		WiFi.mode(WIFI_MODE_NULL);	// Resetting WiFi in case it was already running.
+	}
+	return wifi_configured;
 }
 
+void wifi_connection_begin(void){
+	if (!wifi_configured) { Serial.println("WiFi not configured.  Aborting connection attempt."); return; }
+
+	int n = WiFi.scanNetworks();
+	if (n > 0) {
+		for (int i = 0; i < n; ++i) {
+			if (wifiSSID == WiFi.SSID(i)){
+				Serial.print("Selected WiFi network \"" + wifiSSID + "\" is available.  Attempting connection.\n");
+				WiFi.mode(WIFI_STA);
+				WiFi.begin(wifiSSID, wifiPass);
+				if (discord_get_last_status_failed()) discord_send_status(true);
+				return;
+			}
+		}
+		Serial.print("Error: Unable to find selected WiFi Network: \"" + wifiSSID + "\"\n");
+	} else {
+		Serial.println("Error: No WiFi Networks Available");
+	}
+	wifi_connected = false;
+}
+
+bool get_wifi_configured(void) { return wifi_configured; }
+
+bool get_wifi_connected(void) { return wifi_connected; }
+
 String get_wifi_connection_status(void){
-	String ret = "WiFi Disconnected";
+	String ret = WIFIDISCONNECTEDSTRING;
 	if (WiFi.status() == WL_CONNECTED) {
+		wifi_connected = true;
 		ret = "WiFi Connected.  Local IP: ";
 		ret += WiFi.localIP().toString();
-	}
+	} else wifi_connected = false;
 	return ret;
 }
 
@@ -32,6 +62,17 @@ void autoprint_wifi_connection_status(void){
 			Serial.print("WiFi Connected.  Local IP: ");
 			Serial.print(WiFi.localIP().toString());
 			Serial.print("\n");
-		} else	Serial.println("WiFi is Disconnected");
+		} else	Serial.println("WiFi is Disconnected.");
+	}
+}
+
+void wifi_retry_connection(void) {
+	if (!wifi_configured) return;
+	if (WiFi.status() == WL_CONNECTED) { wifi_connected = true; return; }
+
+	if ((millis() - lastWiFiRetryMillis) > WIFIRETRYCONNECTIONDELAYMS) {
+		lastWiFiRetryMillis = millis();
+		Serial.println("Attempting to connect to WiFi...");
+		wifi_connection_begin();
 	}
 }
