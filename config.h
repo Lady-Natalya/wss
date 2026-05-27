@@ -6,6 +6,6 @@
     #define config_h
 	#include "src/wss.h"
 
-	#define FW_VERSION "0.0.1"
-    #define BUILD_DATE "2026APR06"
+	#define FW_VERSION "0.0.1A"
+    #define BUILD_DATE "2026MAY27"
 #endif

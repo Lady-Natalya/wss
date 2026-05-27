@@ -12,8 +12,13 @@ void preferences_reload(void) {
 		}
 	}
 	if (discord_setup()) {
-		Serial.println("Discord is both Configured and Enabled.");
-		discord_begin();
+		if (get_wifi_connected()) {
+			Serial.println(F("Discord is set up and WiFi is connected."));
+			discord_begin();
+		} else {
+			Serial.println(F("Discord is set up, but Wifi is disconnected.  Waiting for WiFi connection before starting Discord."));
+		}
+
 	}
 	else Serial.println("Discord is Disabled.");
 }

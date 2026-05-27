@@ -5,6 +5,9 @@
 	#define WIFIRETRYCONNECTIONDELAYMS 60000
 	#define WIFIDISCONNECTEDSTRING "WiFi Disconnected"
 
+	#define WIFI_SCAN_RUNNING (-1)
+	#define WIFI_SCAN_FAILED (-2)
+
 	bool wifi_setup(void);
 
 	void wifi_connection_begin(void);

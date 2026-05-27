@@ -6,6 +6,11 @@ uint32_t lastMillis = 0;
 
 void setup() {
 	Serial.begin(115200);
+	Serial.println(F("#### Wireless Sensor Systems ####"));
+	Serial.print(F("Version: "));
+	Serial.print(FW_VERSION);
+	Serial.print(F("  Date: "));
+	Serial.println(BUILD_DATE);
 	preferences_do_setup();
 	gpio_begin();
 	http_server_begin();
@@ -18,7 +23,8 @@ void doFrame() {
 	LED_blink();
 	autoprint_wifi_connection_status();
 	if (!get_wifi_connected() && get_wifi_configured()) wifi_retry_connection();
-	discord_send_status(false);
+	if (get_wifi_connected() && !get_discord_began()) discord_retry_begin();
+	if (get_wifi_connected() && get_discord_began()) { discord_send_status(false); }
 }
 
 void loop() {
