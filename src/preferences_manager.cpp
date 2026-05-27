@@ -5,10 +5,10 @@ Preferences preferences;
 void preferences_reload(void) {
 	Serial.println("Loading Preferences...");
 	if (wifi_setup()) {
-		Serial.println("Wifi is Configured.  Attempting connection...");
+		Serial.println("WiFi is Configured.  Attempting connection...");
 		wifi_connection_begin();
 		if (get_wifi_connection_status() == WIFIDISCONNECTEDSTRING) {
-			Serial.println("Unable to connect to WiFi.");
+			Serial.println("WiFi is currently disconnected.");
 		}
 	}
 	if (discord_setup()) {
